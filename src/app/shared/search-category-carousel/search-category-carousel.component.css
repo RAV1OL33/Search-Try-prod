@@ -1,0 +1,9 @@
+.search_category_carousel__container{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+.search_category_carousel__item{
+  border: solid;
+}
+

@@ -1,0 +1,12 @@
+<div class="search_category_carousel__container">
+  <div class="search_category_carousel__item" *ngFor="let category of (searchCategories$ | async)">
+
+    <div class="__item_title">
+      {{category.searchCategoryTitle}}
+    </div>
+    <div class="__item_search-template">
+      <app-search-template-gallery [SearchTemplates]="category.searchTemplates" [SearchCategoryTitle]="category.searchCategoryTitle"></app-search-template-gallery>
+    </div>
+
+  </div>
+</div>

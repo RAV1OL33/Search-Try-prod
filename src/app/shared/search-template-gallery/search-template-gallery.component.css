@@ -1,0 +1,4 @@
+.search_template_gallery__container{
+  display: flex;
+  justify-content: space-around;
+}

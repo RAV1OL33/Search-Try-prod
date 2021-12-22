@@ -1,0 +1,14 @@
+<div class="search_template_gallery__container">
+  <!--TODO: Add ngFor* and get template list from profile(?)-->
+  <!--
+  <app-search-template-btn class="search_template_gallery__item"
+                           *ngFor="let template of (searchTemplates$ | async)"></app-search-template-btn>
+  -->
+<app-search-template-btn class="search_template_gallery__item"
+                         *ngFor="let searchTemplate of SearchTemplates"
+                         [template]="searchTemplate"
+                         [category]="SearchCategoryTitle">
+
+</app-search-template-btn>
+</div>
+
