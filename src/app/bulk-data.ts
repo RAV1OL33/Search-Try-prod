@@ -1,7 +1,5 @@
 import {AppState} from "./models";
-const ffgfg ='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'
-const asd3 ='RAV1OL33'
-const sdf2 ='https://rav1ol33.github.io/Search-Try-prod/'
+
 const BulkData: AppState = {
   searchString: '',
   searchCategories: [
