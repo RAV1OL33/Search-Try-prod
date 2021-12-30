@@ -1,103 +1,139 @@
 <div class="search_template_btn__item">
   <!--{{searchString$ | async}}-->
-  <div>
-    <a href="{{requestLink}}" target="_blank">{{template.siteCaption}}</a>
+  <div *ngIf="template.siteCaption!=''">
+    <div class="btn-group" role="group" aria-label="Basic example">
+      <a class="btn btn-success" href="{{requestLink}}" target="_blank">{{template.siteCaption}}</a>
+      <button
+        (click)="initModal(template)"
+        class="btn btn-primary"
+        [attr.data-bs-target]="'#CreateNewTemplate'+category + template.id"
+        data-bs-toggle="modal"
+        type="button">
+        <i class="bi bi-pen-fill"></i>
+      </button>
+      <button
+        class="btn btn-danger"
+        [attr.data-bs-target]="'#DeleteTemplate'+category + template.id"
+        data-bs-toggle="modal"
+        type="button">
+        <i class="bi bi-trash"></i>
+      </button>
+    </div>
+
+
+
   </div>
   <div *ngIf="template.siteCaption==''">
     <!-- Button trigger modal -->
     <!-- TODO: Check all names/IDs/etc-->
+    <!-- TODO: Change way how btn nested -->
     <button
       (click)="initModal()"
       class="btn btn-primary"
-      [attr.data-bs-target]="'#CreateNewTemplate'+category"
+      [attr.data-bs-target]="'#CreateNewTemplate'+category+template.id"
       data-bs-toggle="modal"
       type="button">
       Add template
     </button>
 
-    <!-- Modal -->
-    <div
-      class="fade modal"
-      [attr.id]="'CreateNewTemplate' + category"
-      tabindex="-1"
-      aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
 
-            <form [formGroup]="SearchTemplateFormGroup" (ngSubmit)="onSubmit()">
-              <div class="mb-3">
-                <label for="formSearchKeyword" class="form-label">Search keyword</label>
-                <input type="text" class="form-control" aria-describedby="formSearchKeywordHelp"
-                       id="formSearchKeyword"
-                       formControlName="formSearchKeyword"
-                >
-                <div id="formSearchKeywordHelp" class="form-text">We'll never share your email with anyone else.</div>
-              </div>
-              <div class="mb-3">
-                <label for="formRequestLink" class="form-label">Link for search result </label>
-                <input type="text" class="form-control"
-                       id="formRequestLink"
-                       formControlName="formRequestLink"
-                >
-              </div>
-              <div class="mb-3">
-                <label for="formSiteCaption" class="form-label">Template name</label>
-                <input type="text" class="form-control"
-                       id="formSiteCaption"
-                       formControlName="formSiteCaption"
-                >
-              </div>
-              <button type="submit" class="btn btn-primary">Submit</button>
-            </form>
+  </div>
+  <!-- Modal -->
+  <div
+    class="fade modal"
+    [attr.id]="'CreateNewTemplate'+category+template.id"
+    tabindex="-1"
+    aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          {{template | json}}
+          {{isEdit}}
+          <!---->
 
-
-            <!--<form (ngSubmit)="onSubmit()" #searchTemplateForm="ngForm">
-              <div class="mb-3">
-                <label for="searchKeyword" class="form-label">Search keyword</label>
-                <input type="text" class="form-control" id="searchKeyword" aria-describedby="searchKeywordHelp"
-                       required
-                       [(ngModel)]="model.keyword"
-                       name="keyword"
-                       #name="ngModel"
-                >
-                <div id="searchKeywordHelp" class="form-text">We'll never share your email with anyone else.</div>
+          <form [formGroup]="SearchTemplateFormGroup" (ngSubmit)="onSubmit()">
+            <div class="mb-3" *ngIf="!isEdit">
+              <label for="formSearchKeywordId" class="form-label">Search keyword</label>
+              <input type="text" class="form-control" aria-describedby="formSearchKeywordHelp"
+                     id="formSearchKeywordId" name="formSearchKeyword" formControlName="formSearchKeyword"
+              >
+              <div *ngIf="SearchTemplateFormGroup.get('formSearchKeyword')!.invalid
+                && (SearchTemplateFormGroup.get('formSearchKeyword')!.dirty
+                || SearchTemplateFormGroup.get('formSearchKeyword')!.touched || !SearchTemplateFormGroup.valid)"
+                   class="alert alert-danger">
+                <div *ngIf="SearchTemplateFormGroup.get('formSearchKeyword')!.errors?.['required']">
+                  Search keyword is required.
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="siteCaption" class="form-label">Template name</label>
-                <input type="text" class="form-control" id="siteCaption"
-                       required
-                       [(ngModel)]="model.siteCaption"
-                       name="siteCaption"
-                       #name="ngModel"
-                >
+              <div id="formSearchKeywordHelp" class="form-text">We'll never share your email with anyone else.</div>
+            </div>
+            <div class="mb-3">
+              <label for="formRequestLink" class="form-label">Link for search result </label>
+              <input type="text" class="form-control"
+                     id="formRequestLink"
+                     formControlName="formRequestLink"
+              >
+              <div *ngIf="SearchTemplateFormGroup.get('formRequestLink')!.invalid
+                && (SearchTemplateFormGroup.get('formRequestLink')!.dirty
+                || SearchTemplateFormGroup.get('formRequestLink')!.touched || !SearchTemplateFormGroup.valid)"
+                   class="alert alert-danger">
+                <div *ngIf="SearchTemplateFormGroup.get('formRequestLink')!.errors?.['required']">
+                  Link for search result is required.
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="searchRequestLink" class="form-label">Link for search result </label>
-                <input type="text" class="form-control" id="searchRequestLink"
-                       required
-                       [(ngModel)]="model.requestLink"
-                       name="requestLink"
-                       #name="ngModel">
+            </div>
+            <div class="mb-3">
+              <label for="formSiteCaption" class="form-label">Template name</label>
+              <input type="text" class="form-control"
+                     id="formSiteCaption"
+                     formControlName="formSiteCaption"
+              >
+              <div *ngIf="SearchTemplateFormGroup.get('formSiteCaption')!.invalid
+                && (SearchTemplateFormGroup.get('formSiteCaption')!.dirty
+                || SearchTemplateFormGroup.get('formSiteCaption')!.touched || !SearchTemplateFormGroup.valid)"
+                   class="alert alert-danger">
+                <div *ngIf="SearchTemplateFormGroup.get('formSiteCaption')!.errors?.['required']">
+                  Template name is required.
+                </div>
               </div>
-              <div class="mb-3 form-check">
-                <input type="checkbox" class="form-check-input" id="exampleCheck1">
-                <label class="form-check-label" for="exampleCheck1">Check me out</label>
-              </div>
-              <button type="submit" class="btn btn-primary">Submit</button>
-            </form>-->
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Save changes</button>
-          </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button *ngIf="!isEdit" [disabled]="!SearchTemplateFormGroup.valid" type="submit" class="btn btn-primary"
+                      data-bs-dismiss="modal">Add Template
+              </button>
+              <button *ngIf="isEdit" type="submit" class="btn btn-primary"
+                      data-bs-dismiss="modal">Save changes
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
   </div>
 
+
+  <!-- Delete Modal -->
+  <div class="modal fade"
+       [attr.id]="'DeleteTemplate'+category+template.id"
+       tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="DeleteModalLabel">Modal title</h5>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                  (click)="deleteSearchTemplate(template)">Yes</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

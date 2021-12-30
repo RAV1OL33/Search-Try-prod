@@ -3,7 +3,7 @@ import {BehaviorSubject, Observable} from "rxjs";
 import {AppStateService} from "../../services/app-state.service";
 import {AppState, SearchTemplate} from "../../models";
 import {BulkData} from "../../bulk-data";
-import {FormControl, FormGroup} from "@angular/forms";
+import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 
 @Component({
   selector: 'app-search-template-btn',
@@ -13,30 +13,63 @@ import {FormControl, FormGroup} from "@angular/forms";
 export class SearchTemplateBtnComponent implements OnInit {
 
   //TODO: make more obvious names like templateSiteCaption instead of siteCaption
-  @Input() template: SearchTemplate = {siteCaption: '', requestLink: ''};
+  @Input() template: SearchTemplate = {id: 0, siteCaption: '', requestLink: ''};
   @Input() category: string = '';
 
   searchString$: Observable<string> | undefined;
   requestLink: any;
-  model = {keyword: '', requestLink: '', siteCaption: ''};
+  isEdit = false;
+  /*
+    SearchTemplateFormGroup = new FormGroup({
+      formSearchKeyword: new FormControl(''),
+      formRequestLink: new FormControl(''),
+      formSiteCaption: new FormControl(''),
+    })
+    signupForm = new FormGroup({
+      email: new FormControl('', [
+        Validators.required,
+        Validators.email
+      ]),
+      password: new FormControl('', [
+        Validators.required, Validators.minLength(6)
+      ]),
+    });
+   */
 
-  //form = new FormControl('')
-  SearchTemplateFormGroup = new FormGroup({
-    formSearchKeyword: new FormControl(''),
-    formRequestLink: new FormControl(''),
-    formSiteCaption: new FormControl(''),
+  SearchTemplateFormGroup = this.fb.group({
+    formSearchKeyword: ['', Validators.required],
+    formRequestLink: ['', Validators.required],
+    formSiteCaption: ['', Validators.required],
   })
 
 
   constructor(
-    private appStateService: AppStateService
+    private appStateService: AppStateService,
+    private fb: FormBuilder
   ) {
+
   }
 
-  initModal() {
-    this.model.siteCaption = '';
-    this.model.requestLink = '';
-    //console.log('INIT MODAL')
+  parseSearchString(_keyword: string, _searchString: string) {
+    _searchString = _searchString.replace(new RegExp(_keyword,'g'), '{TARGET}')
+    return _searchString;
+  }
+
+
+  initModal(currentTemplate?: SearchTemplate) {
+    if (currentTemplate) {
+      this.isEdit = true;
+      this.SearchTemplateFormGroup.patchValue({
+        formRequestLink: currentTemplate.requestLink,
+        formSiteCaption: currentTemplate.siteCaption,
+      })
+    } else {
+      this.isEdit = false;
+      this.SearchTemplateFormGroup.patchValue({
+        formRequestLink: '',
+        formSiteCaption: '',
+      })
+    }
   }
 
   ngOnInit(): void {
@@ -44,19 +77,42 @@ export class SearchTemplateBtnComponent implements OnInit {
     //this.searchTemplateForm =''
     const sub_test = this.searchString$.subscribe(searchString => {
       this.requestLink = this.template.requestLink;
-      this.model = {keyword: searchString || '', siteCaption: '', requestLink: ''};
-      this.requestLink = this.requestLink.replace('{TARGET}', searchString)
+      this.SearchTemplateFormGroup.patchValue({
+        formSearchKeyword: searchString || '',
+        //formRequestLink: this.template.requestLink,
+        //formSiteCaption: '',
+      })
+      //this.model = {keyword: searchString || '', siteCaption: '', requestLink: ''};
+      this.requestLink = this.requestLink.replace(/{TARGET}/g, searchString)
       //console.log('requestLink after >>', this.requestLink)
     })
   }
 
+  deleteSearchTemplate(currentTemplate: SearchTemplate) {
+    console.log(this.category, this.template.id)
+    this.appStateService.deleteSearchTemplate(this.category, this.template.id);
+  }
+
   onSubmit() {
-    const SearchTemplate = {
-      siteCaption: this.model.siteCaption,
-      requestLink: this.model.requestLink
+    if (this.isEdit) {
+      this.isEdit = false;
+      const _newSearchTemplate = {
+        id: this.template.id,
+        siteCaption: this.SearchTemplateFormGroup.value.formSiteCaption,
+        requestLink: this.SearchTemplateFormGroup.value.formRequestLink
+      }
+      console.log('Edit search template >>> ', _newSearchTemplate)
+      this.appStateService.setSearchTemplate(this.category, _newSearchTemplate, this.template.id);
+    } else {
+      const _newSearchTemplate = {
+        id: this.appStateService.getNewTemplateId(this.category),
+        siteCaption: this.SearchTemplateFormGroup.value.formSiteCaption,
+        requestLink: this.parseSearchString(this.SearchTemplateFormGroup.value.formSearchKeyword, this.SearchTemplateFormGroup.value.formRequestLink)
+      }
+      console.log('Add new search template >>> ', _newSearchTemplate)
+      this.appStateService.setSearchTemplate(this.category, _newSearchTemplate);
     }
-    console.warn(this.SearchTemplateFormGroup.value)
-    //this.appStateService.setSearchTemplate(this.category, SearchTemplate);
+
   }
 
 }

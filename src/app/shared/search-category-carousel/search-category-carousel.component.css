@@ -3,6 +3,12 @@
   flex-direction: column;
   justify-content: space-around;
 }
+.search_category_carousel__container nav{
+}
+.search_category_carousel__container .tab-content, nav{
+  padding: 0.5rem;
+
+}
 .search_category_carousel__item{
   border: solid;
 }

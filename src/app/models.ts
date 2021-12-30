@@ -7,6 +7,7 @@ export interface SearchCategory{
   searchTemplates: SearchTemplate[]
 }
 export interface  SearchTemplate{
+  id: number;
   siteCaption: string;
   requestLink: string
 }

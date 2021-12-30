@@ -23,6 +23,8 @@ export class AppStateService {
 
   //TODO: Create right getter setter for appState
   private getAppState() {
+    console.warn('> getAppState')
+
     // This block create GET to some/test/url and receive <Type>? witch then set via setter
     /*
     this.httpClient.get<SearchTarget>('some/test/url').subscribe((searchTarget)=>{
@@ -33,9 +35,20 @@ export class AppStateService {
       }
     */
     //BulkData.searchString = ''
+    let json_data = localStorage.getItem('user_data') || ''
     const simple_value = new BehaviorSubject<AppState>(BulkData)
-    const test_subscribe = simple_value.subscribe((val) => {
+    console.log('> getAppState JSON Result:', json_data)
+    const response = json_data == '' ? BulkData : JSON.parse(json_data)
+    const simple_JSON = new BehaviorSubject<AppState>(response)
+    console.warn()
+    /*const test_subscribe = simple_value.subscribe((val) => {
         this.setAppState(val)
+        //console.log(val)
+      }
+    )*/
+    const simple_JSON_subscribe = simple_JSON.subscribe((val) => {
+        this.setAppState(val)
+        this.setSearchString('')
         //console.log(val)
       }
     )
@@ -43,9 +56,12 @@ export class AppStateService {
 
   private setAppState(appState: AppState) {
     this.appState$.next(appState);
-    //console.log(this.appState$)
+    console.log("SET APP STATE >", this.appState$)
+    localStorage.setItem('user_data', JSON.stringify(appState))
   }
-
+setNewLocalStorageSave(){
+    this.getAppState()
+}
   getSearchString(): Observable<string> {
 
     //const appState = {...this.appState$.value}
@@ -70,13 +86,36 @@ export class AppStateService {
     );
   }
 
-  setSearchTemplate(_currentSearchCategoryTitle: string, _newSearchTemplate: SearchTemplate) {
+  setSearchTemplate(_currentSearchCategoryTitle: string, _newSearchTemplate: SearchTemplate, updatedTemplateId?: number) {
     const appState = {...this.appState$.value};
+    let category = appState.searchCategories.find(category => category.searchCategoryTitle === _currentSearchCategoryTitle)
+    if (category)
+      if (updatedTemplateId) {
+        let target_template = category.searchTemplates.find(template => template.id === updatedTemplateId)
+        target_template && category.searchTemplates.splice(category.searchTemplates.indexOf(target_template), 1, _newSearchTemplate)
+      } else {
+        category.searchTemplates.splice(category.searchTemplates.length - 1, 0, _newSearchTemplate)
+      }
+    this.setAppState(appState)
+  }
+  deleteSearchTemplate(_currentSearchCategoryTitle: string, _templateId: number){
+    const appState = {...this.appState$.value};
+    let category = appState.searchCategories.find(category => category.searchCategoryTitle === _currentSearchCategoryTitle)
+    if (category)
+      if (_templateId) {
+        let target_template = category.searchTemplates.find(template => template.id === _templateId)
+        target_template && category.searchTemplates.splice(category.searchTemplates.indexOf(target_template), 1)
+      }
+    this.setAppState(appState)
+  }
+  getNewTemplateId(_currentSearchCategoryTitle: string) {
+    const appState = {...this.appState$.value};
+    let curr_id = 0;
     appState.searchCategories.forEach(searchCategory => {
       if (searchCategory.searchCategoryTitle == _currentSearchCategoryTitle)
-        searchCategory.searchTemplates.splice(searchCategory.searchTemplates.length-2,0,_newSearchTemplate)
+        curr_id = searchCategory.searchTemplates[searchCategory.searchTemplates.length - 2].id
       return;
     })
+    return curr_id + 1;
   }
-
 }
